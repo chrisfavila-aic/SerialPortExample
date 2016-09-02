@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <string name="app_name">SerialPortExample</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
-    <string name="serial_port">Serial Port</string>
-
+    <string name="app_name">Beacon Mode</string>
+    <string name="send_beacon_button">Send Beacon</string>
+    <string name="current_position_textview">Current Position</string>
+    <string name="position_display_placeholder">Calculating position...</string>
 </resources>

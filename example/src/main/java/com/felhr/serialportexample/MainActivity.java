@@ -6,6 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -23,8 +26,8 @@ import java.util.Set;
 public class MainActivity extends AppCompatActivity {
 
     /*
-     * Notifications from UsbService will be received here.
-     */
+    * Notifications from UsbService will be received here.
+    */
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -47,10 +50,15 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
+
     private UsbService usbService;
-    private TextView display;
-    private EditText editText;
     private MyHandler mHandler;
+    private TextView text;
+    private LocationManager locationManager;
+    private LocationListener locationListener;
+    private String data;
+    private boolean BeaconActive = false;
+
     private final ServiceConnection usbConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName arg0, IBinder arg1) {
@@ -64,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,22 +80,77 @@ public class MainActivity extends AppCompatActivity {
 
         mHandler = new MyHandler(this);
 
-        display = (TextView) findViewById(R.id.textView1);
-        editText = (EditText) findViewById(R.id.editText1);
-        Button sendButton = (Button) findViewById(R.id.buttonSend);
-        sendButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!editText.getText().toString().equals("")) {
-                    String data = editText.getText().toString();
-                    if (usbService != null) { // if UsbService was correctly binded, Send data
-                        display.append(data);
-                        usbService.write(data.getBytes());
-                    }
+        text = (TextView) findViewById(R.id.display_text);
+
+        // Acquire a reference to the system Location Manager
+        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+
+        // Define a listener that responds to location updates
+        locationListener = new LocationListener() {
+            public void onLocationChanged(Location location) {
+                // Called when a new location is found by the network location provider.
+                //makeUseOfNewLocation(location);
+                data = String.format("%.4f",location.getLatitude()) + ", " + String.format("%.4f",location.getLongitude()) + "     ";
+
+                if (!BeaconActive) {
+
+                    BeaconActive = true;
+
+                    final Handler handler = new Handler();
+                    final Runnable run = new Runnable() {
+                        @Override
+                        public void run() {
+                            text.setText(data);
+                            if (usbService != null) {
+                                usbService.write(data.getBytes());
+                            }
+
+                            handler.postDelayed(this, 5000);
+                        }
+                    };
+                    handler.post(run);
                 }
             }
-        });
+
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+            }
+
+            public void onProviderEnabled(String provider) {
+            }
+
+            public void onProviderDisabled(String provider) {
+            }
+        };
+
+        // Register the listener with the Location Manager to receive location updates
+/*        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            requestPermissions(new String[]{
+                    Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.INTERNET
+            }, 10);
+            return;
+        }*/
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+        //configureButton();
     }
+
+/*    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode){
+            case 10:
+                if (grantResults.length>0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                    configureButton();
+                return;
+        }
+    }*/
 
     @Override
     public void onResume() {
@@ -143,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
             switch (msg.what) {
                 case UsbService.MESSAGE_FROM_SERIAL_PORT:
                     String data = (String) msg.obj;
-                    mActivity.get().display.append(data);
+                    //mActivity.get().display.append(data);
                     break;
             }
         }
