@@ -26,7 +26,7 @@
         android:layout_above="@+id/display_text"
         android:layout_centerHorizontal="true"
         android:textSize="24sp"
-        android:text="Current Location"
+        android:text="BEACON MODE"
         android:textColor="@color/background_material_dark" />
 
 </RelativeLayout>
