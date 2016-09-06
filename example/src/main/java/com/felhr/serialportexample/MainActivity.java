@@ -14,6 +14,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -57,6 +58,9 @@ public class MainActivity extends AppCompatActivity {
     private LocationManager locationManager;
     private LocationListener locationListener;
     private String data;
+    private String lat;
+    private String lng;
+    private String msg;
     private boolean BeaconActive = false;
 
     private final ServiceConnection usbConnection = new ServiceConnection() {
@@ -90,7 +94,10 @@ public class MainActivity extends AppCompatActivity {
             public void onLocationChanged(Location location) {
                 // Called when a new location is found by the network location provider.
                 //makeUseOfNewLocation(location);
-                data = String.format("%.4f",location.getLatitude()) + ", " + String.format("%.4f",location.getLongitude()) + "     ";
+
+                lat = String.format("%.4f",location.getLatitude());
+                lng = String.format("%.4f",location.getLongitude());
+                data = lat + "#" + lng + "#" + getMsg() + "#";
 
                 if (!BeaconActive) {
 
@@ -100,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
                     final Runnable run = new Runnable() {
                         @Override
                         public void run() {
-                            text.setText(data);
+                            text.setText(lat +", " + lng);
                             if (usbService != null) {
                                 usbService.write(data.getBytes());
                             }
@@ -211,5 +218,9 @@ public class MainActivity extends AppCompatActivity {
                     break;
             }
         }
+    }
+
+    public String getMsg(){
+        return "01";
     }
 }
