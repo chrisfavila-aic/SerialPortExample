@@ -32,17 +32,23 @@ public class MainActivity extends AppCompatActivity {
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+
+            TextView usbtext = (TextView) findViewById(R.id.usbcon_text);
+
             switch (intent.getAction()) {
                 case UsbService.ACTION_USB_PERMISSION_GRANTED: // USB PERMISSION GRANTED
+                    usbtext.setText("USB Device Connected");
                     Toast.makeText(context, "USB Ready", Toast.LENGTH_SHORT).show();
                     break;
                 case UsbService.ACTION_USB_PERMISSION_NOT_GRANTED: // USB PERMISSION NOT GRANTED
                     Toast.makeText(context, "USB Permission not granted", Toast.LENGTH_SHORT).show();
                     break;
                 case UsbService.ACTION_NO_USB: // NO USB CONNECTED
+                    usbtext.setText("Waiting for USB Device");
                     Toast.makeText(context, "No USB connected", Toast.LENGTH_SHORT).show();
                     break;
                 case UsbService.ACTION_USB_DISCONNECTED: // USB DISCONNECTED
+                    usbtext.setText("USB Device Disconnected");
                     Toast.makeText(context, "USB disconnected", Toast.LENGTH_SHORT).show();
                     break;
                 case UsbService.ACTION_USB_NOT_SUPPORTED: // USB NOT SUPPORTED
